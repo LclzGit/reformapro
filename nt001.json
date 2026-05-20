@@ -1,0 +1,87 @@
+[
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Introdução",
+    "t": "Este documento contempla a primeira versão dos novos agrupamentos e campos opcionais do layout da Nota Fiscal de Serviço Eletrônica (NFS-e) padrão nacional relacionados à tributação do IBS (Imposto sobre Bens e Serviços), da CBS (Contribuição sobre Bens e Serviços) e do Imposto Seletivo (IS) incidentes nas operações de serviços, em atendimento às alterações previstas na Reforma Tributária do Consumo, conforme a EC nº 132/2023 . Os novos agrupamentos foram inseridos a partir do layout atual da NFS-e (documento \"AnexoIV-LeiautesRN_ADN-SNNFSe_V1.00.02-Produção.xlsx\", aba \"LEIAUTE NFS-e ADN\"), disponível no Portal da NFS-e: https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica . O conjunto de campos apresentados é uma primeira versão , baseada no texto do PLP nº 68/2024 (ainda em tramitação à época). Novas versões seriam publicadas com atualizações. O novo padrão deveria vigorar a partir de janeiro de 2026 . Fluxo de emissão da NFS-e: O emissor (prestador de serviços) preenche a Declaração de Prestação de Serviço (DPS) , que é enviada à \"Sefin Nacional\" para validação, cálculo dos tributos e autorização. Se aprovada, é gerada a NFS-e em XML com o destaque dos tributos devidos. A DPS é assinada e encapsulada no interior da nota gerada."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Glossário do Layout",
+    "t": "Para compreensão dos layouts dispostos na Nota Técnica: Coluna Descrição CAMINHO NO XML Path ordenado em que as informações devem ser dispostas na formatação do XML. CAMPO Nome do campo/informação que deve constar no XML. ELE ID – identificador; E – Element; G – Group; CG – Choice Group; CE – Choice Element. TIPO N – Numérico; C – Caractere; D – Data. Tags G/CG não possuem tipo. OCOR. Ocorrências possíveis. Ex.: 0-1 = opcional/único; 1-1 = obrigatório/único; 1-60 = obrigatório/até 60 vezes. TAM. Tamanho do campo. Ex.: 14 = fixo 14 chars; 1-150 = variável; 1-3V2 = até 3 inteiros + 2 decimais. Tags G/CG não possuem tamanho."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo IBSCBSSEL (DPS)",
+    "t": "Na DPS, foi criado o grupo IBSCBSSEL (caminho NFSe/infNFSe/DPS/infDPS/ ). Neste grupo são dispostos todos os subgrupos e informações relativas aos novos tributos: IBS, CBS e Imposto Seletivo, informados pelo contribuinte na emissão. CAMINHO NO XML CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO NFSe/infNFSe/DPS/infDPS/ IBSCBSSEL G – 1-1 – Grupo de informações declaradas pelo emitente referentes ao IBS / CBS / Imposto Seletivo."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo dest – Destinatário (DPS)",
+    "t": "Grupo de Informações Relativas ao Destinatário — caminho base: NFSe/infNFSe/DPS/infDPS/IBSCBSSEL/ CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO dest G – 0-1 – Grupo de informações relativas ao Destinatário. CNPJ CE N 1-1 14 CNPJ do destinatário do serviço. CPF CE N 1-1 11 CPF do destinatário do serviço. NIF CE C 1-1 40 Número de identificação fiscal fornecido por órgão de administração tributária no exterior. cNaoNIF CE N 1-1 1 Motivo para não informação do NIF: 0 – Não informado na nota de origem; 1 – Dispensado do NIF; 2 – Não exigência do NIF. CAEPF E N 0-1 14 Cadastro de Atividade Econômica da Pessoa Física (CAEPF) do destinatário. xNome E C 1-1 150 Nome / Nome Empresarial do destinatário. end G – 0-1 – Grupo de informações do endereço do destinatário do serviço. endNac CG – 1-1 – Grupo de informações do endereço nacional. cMun E N 1-1 7 Código do município do endereço do destinatário (Tabela do IBGE). CEP E C 1-1 8 Código numérico do Endereçamento Postal nacional (CEP). endExt CG – 1-1 – Grupo de informações do endereço no exterior. cPais E C 1-1 2 Código do país do endereço do prestador do destinatário (Tabela de Países ISO). cEndPost E C 1-1 1-11 Código alfanumérico do Endereçamento Postal no exterior. xCidade E C 1-1 1-60 Nome da cidade no exterior do destinatário. xEstProvReg E C 1-1 1-60 Estado, província ou região da cidade no exterior. xLgr E C 1-1 1-255 Tipo e nome do logradouro. nro E C 1-1 1-60 Número no logradouro do endereço. xCpl E C 0-1 1-156 Complemento do endereço do destinatário. xBairro E C 1-1 1-60 Bairro do endereço do destinatário. fone E N 0-1 6-20 Número do telefone. Para exterior: código do país + código da localidade + número. email E C 0-1 1-80 E-mail do destinatário."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo adq – Adquirente (DPS)",
+    "t": "Grupo de Informações Relativas ao Adquirente — caminho base: NFSe/infNFSe/DPS/infDPS/IBSCBSSEL/ CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO adq G – 0-1 – Grupo de informações relativas ao Adquirente. CNPJ CE N 1-1 14 CNPJ do adquirente do serviço. CPF CE N 1-1 11 CPF do adquirente do serviço. NIF CE C 1-1 40 Número de identificação fiscal fornecido por órgão de administração tributária no exterior. cNaoNIF CE N 1-1 1 Motivo para não informação do NIF: 0 – Não informado; 1 – Dispensado; 2 – Não exigência. CAEPF E N 0-1 14 Cadastro de Atividade Econômica da Pessoa Física (CAEPF) do adquirente. xNome E C 1-1 150 Nome / Nome Empresarial do adquirente. end G – 0-1 – Grupo de informações do endereço do adquirente. endNac → cMun E N 1-1 7 Código do município do endereço do adquirente (Tabela IBGE). endNac → CEP E C 1-1 8 CEP do endereço do adquirente. endExt → cPais E C 1-1 2 Código do país (Tabela de Países ISO). endExt → cEndPost E C 1-1 1-11 Endereçamento Postal no exterior. xLgr E C 1-1 1-255 Tipo e nome do logradouro do endereço do adquirente. nro E C 1-1 1-60 Número no logradouro do endereço do adquirente. xCpl E C 0-1 1-156 Complemento do endereço do adquirente. xBairro E C 1-1 1-60 Bairro do endereço do adquirente. fone E N 0-1 6-20 Número do telefone do adquirente. email E C 0-1 1-80 E-mail do adquirente."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo serv – Serviço Prestado para IBS, CBS e IS (DPS)",
+    "t": "Grupo de Informações Relativas ao Serviço Prestado para IBS, CBS e IS — caminho base: NFSe/infNFSe/DPS/infDPS/IBSCBSSEL/ CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO serv G G 1-1 – Grupo de informações relativas ao serviço prestado para IBS/CBS e Imposto Seletivo. modoPrestServ E C 1-1 1 Modo de prestação do serviço: 1 – Presencial; 2 – Não presencial. clocalPrestServ CE N 1-1 7 Código da localidade da prestação do serviço. cPaisPrestServ CE C 1-1 2 Código do país onde ocorreu a prestação do serviço (Tabela de Países ISO). cCIB E C 0-1 8 Cadastro de imóveis. Obrigatório para construção civil."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo valores / trib / seletivo – Imposto Seletivo (DPS)",
+    "t": "Grupo de Informações Relativas aos Valores do Serviço Prestado para IBS, CBS e IS — caminho base: NFSe/infNFSe/DPS/infDPS/IBSCBSSEL/ CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO valores G – 1-1 – Grupo de informações relativas aos valores do serviço prestado para IBS, CBS e Imposto Seletivo. trib G – 1-1 – Grupo de informações relacionadas aos tributos IBS, CBS e Imposto Seletivo. seletivo G – 0-1 – Grupo de informações declaradas pelo emitente referentes ao Imposto Seletivo. cstImpSel E N 1-1 3 Código de Situação Tributária do Imposto Seletivo. cClassTribImpSel E N 1-1 6 Código de Classificação Tributária do Imposto Seletivo. gImpSel G – 0-1 – Grupo de informações de medida e quantidade relacionadas ao Imposto Seletivo. uTrib E N 1-1 1-3V4 Unidade de medida apropriada especificada em Lei Ordinária para fins de apuração do Imposto Seletivo. qTrib E N 0-1 1-11V4 Quantidade com base no campo uTrib informado. gIBSCBS G – 1-1 – Grupo de informações relacionadas ao IBS e à CBS. cstIBSCBS E N 1-1 3 Código de Situação Tributária do IBS e da CBS. cClassTribIBSCBS E N 1-1 6 Código de Classificação Tributária do IBS e da CBS."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo gIBSUF – IBS Estadual (DPS)",
+    "t": "Grupo de Informações Específicas Relativas ao IBS Estadual — caminho base: NFSe/infNFSe/DPS/infDPS/IBSCBSSEL/valores/trib/gIBSCBS/ CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO gIBSUF G – 1-1 – Grupo de informações relacionadas ao IBS para o Estado. gCredPres → pCredPresUF E N 1-1 1-3V2 Percentual de crédito presumido estadual. gDif → pDifUF E N 1-1 1-3V2 Percentual de diferimento estadual. gDevTrib → vDevTribUF E N 1-1 1-15V2 Devolução personalizada do IBS estadual. gRed → pRedAliqUF E N 1-1 1-3V2 Percentual de redução de alíquota estadual. gDeson G – 0-1 – Grupo de informações relacionadas à desoneração para o Estado. cstUFDeson E N 1-1 3 Código de Situação tributária estadual de Desoneração do IBS. cClassTribUFDeson E N 1-1 6 Código de Classificação estadual de Desoneração do IBS. pAliqUFDeson E N 1-1 1-2V2 Valor da alíquota estadual de Desoneração do IBS."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo gIBSMun – IBS Municipal (DPS)",
+    "t": "Grupo de Informações Específicas Relativas ao IBS Municipal — caminho base: NFSe/infNFSe/DPS/infDPS/IBSCBSSEL/valores/trib/gIBSCBS/ CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO gIBSMun G – 1-1 – Grupo de informações relacionadas ao IBS para o Município. gCredPres → pCredPresMun E N 1-1 1-3V2 Percentual de crédito presumido municipal. gDif → pDifMun E N 1-1 1-3V2 Percentual de diferimento municipal. gDevTrib → vDevTribMun E N 1-1 1-15V2 Devolução personalizada do IBS municipal. gRed → pRedAliqMun E N 1-1 1-3V2 Percentual de redução de alíquota municipal. gDeson G – 0-1 – Grupo de informações relacionadas à desoneração para o Município. cstMunDeson E N 1-1 3 Código de Situação tributária municipal de Desoneração do IBS. cClassTribMunDeson E N 1-1 6 Código de Classificação municipal de Desoneração do IBS. pAliqMunDeson E N 1-1 1-2V2 Valor da alíquota municipal de Desoneração do IBS."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo gCBS – CBS (DPS)",
+    "t": "Grupo de Informações Específicas Relativas à CBS — caminho base: NFSe/infNFSe/DPS/infDPS/IBSCBSSEL/valores/trib/gIBSCBS/ CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO gCBS G – 1-1 – Grupo de informações relacionadas à CBS. gCredPres → pCredPresCBS E N 1-1 1-3V2 Percentual de crédito presumido para a CBS. gDif → pDifCBS E N 1-1 1-3V2 Percentual de diferimento da CBS. gDevTrib → vDevTribCBS E N 1-1 1-15V2 Devolução personalizada da CBS. gRed → pRedAliqCBS E N 1-1 1-3V2 Percentual da redução de alíquota para a CBS. gDeson G – 0-1 – Grupo de informações da desoneração para a CBS. cstCBSDeson E N 1-1 3 Código de Situação tributária da Desoneração da CBS. cClassTribCBSDeson E N 1-1 6 Código de Classificação Tributária da Desoneração da CBS. pAliqCBSDeson E N 1-1 1-2V2 Valor da alíquota da Desoneração da CBS."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo IBSCBSSEL (NFS-e) – Visão Geral",
+    "t": "Nos novos grupos que constam na NFS-e (fora dos limites da DPS), os campos são aqueles que deverão ser parametrizados pelos Estados, pelos Municípios e pela União, ou calculados automaticamente pela plataforma a partir dos dados da DPS. Foi criado o grupo IBSCBSSEL no caminho NFSe/infNFSe/ , análogo ao criado na DPS. CAMINHO NO XML CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO NFSe/infNFSe/ IBSCBSSEL G – 1-1 – Grupo de informações geradas pelo sistema referentes ao IBS / CBS / Imposto Seletivo."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo IBSCBS – Informações Comuns IBS e CBS (NFS-e)",
+    "t": "Grupo de Informações Comuns Relativas ao IBS e à CBS — caminho: NFSe/infNFSe/IBSCBSSEL/ CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO IBSCBS G – 1-1 – Grupo de informações geradas pelo sistema referentes ao IBS / CBS. xLocalidadeIncid E C 1-1 600 Nome da localidade de incidência do IBS/CBS. xCSTIBSCBS E C 1-1 600 Descrição do Código de Situação Tributária. xClassTribIBSCBS E C 1-1 600 Descrição do Código de Classificação Tributária."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo valores – Valores Brutos IBS e CBS (NFS-e)",
+    "t": "Grupo de Informações de Valores Brutos Relativos ao IBS e à CBS — caminho: NFSe/infNFSe/IBSCBSSEL/IBSCBS/ CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO valores G – 1-1 – Grupo de valores brutos referentes ao IBS / CBS. vBC E N 1-1 1-15V2 Valor da base de cálculo (BC) do IBS/CBS antes das reduções para cálculo do tributo bruto. pIBSUF E N 1-1 1-2V2 Alíquota da UF para IBS da localidade de incidência parametrizada no sistema. pAliqEfetUF E N 1-1 1-2V2 pAliqEfetUF = pIBSUF × pRedAliqUF. Se pRedAliqUF não informado na DPS, pAliqEfetUF é a própria pIBSUF. vTribOpUF E N 1-1 1-15V2 Valor do tributo bruto da Operação para IBS Estadual. vTribOpUF = vBC × pIBSUF. pIBSMun E N 1-1 1-2V2 Alíquota da UF para IBS da localidade de incidência municipal parametrizada no sistema. pAliqEfetMun E N 1-1 1-2V2 pAliqEfetMun = pIBSMun × pRedAliqMun. Se não informado na DPS, é a própria pIBSMun. vTribOpMun E N 1-1 1-15V2 Valor do tributo bruto da Operação para IBS Municipal. vTribOpMun = vBC × pIBSMun. pCBS E N 1-1 1-2V2 Alíquota da União para CBS parametrizada no sistema. pAliqEfetCBS E N 1-1 1-2V2 pAliqEfetCBS = pCBS × pRedAliqCBS. Se não informado na DPS, é a própria pCBS. vTribOpCBS E N 1-1 1-15V2 Valor do tributo bruto da Operação para CBS. vTribOpCBS = vBC × pCBS."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo totCIBSSel – Totalizadores Gerais (NFS-e)",
+    "t": "Grupos Totalizadores — caminho: NFSe/infNFSe/IBSCBSSEL/ CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO totCIBSSel G – 1-1 – Grupo de Totalizadores. vBCCIBS E N 1-1 1-15V2 Valor total da BC do IBS e da CBS. vTotNF E N 1-1 1-15V2 Valor Total da NF considerando os impostos por fora IBS, CBS e IS. O IBS, a CBS e o IS são por fora, por isso seus valores devem ser adicionados ao valor total da NF. vTotNF = vCBS + vIBSTot + vImpSel."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo gSel – Totalizações do Imposto Seletivo (NFS-e)",
+    "t": "Grupo de Informações Relativas às Totalizações do Imposto Seletivo — caminho: NFSe/infNFSe/IBSCBSSEL/totCIBSSel/ CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO gSel G – 0-1 – Grupo de informações geradas pelo sistema referentes ao Imposto Seletivo. vBCImpSel E N 1-1 1-15V2 Base de Cálculo do Imposto Seletivo. pImpSel E N 1-1 1-2V2 Alíquota do Imposto Seletivo (percentual). pImpSelEspec E N 1-1 1-2V2 Alíquota específica por unidade de medida apropriada. vImpSel E N 1-1 1-15V2 Valor do Imposto Seletivo Calculado. vImpSel = vBCImpSel × pImpSel. Se informada alíquota específica: vImpSel = qTrib × pImpSelEspec."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo gIBS – Totalizações do IBS (NFS-e)",
+    "t": "Grupo de Informações Relativas às Totalizações do IBS — caminho: NFSe/infNFSe/IBSCBSSEL/totCIBSSel/ CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO gIBS G – 1-1 – Grupo de valores referentes ao IBS / CBS. gIBSUFTot G – 1-1 – Grupo de valores referentes ao IBS para o Estado. vCredPresUF E N 1-1 1-15V2 Total do Crédito Presumido estadual. vDifUF E N 1-1 1-15V2 Total do Diferimento estadual. vDesonUF E N 1-1 1-15V2 Total valor desonerado estadual. vDesonUF = vBC × pAliqUFDeson. vIBSUF E N 1-1 1-15V2 Valor total do IBS estadual. vIBSUF = (vBCCIBS − vCredPresUF − vDifUF − vDevTribUF − vDesonUF) × pAliqEfetUF. gIBSMunTot G – 1-1 – Grupo de valores referentes ao IBS Municipal. vCredPresMun E N 1-1 1-15V2 Total do Crédito Presumido municipal. vDifMun E N 1-1 1-15V2 Total do Diferimento municipal. vDesonMun E N 1-1 1-15V2 Total valor desonerado municipal. vDesonMun = vBC × pAliqMunDeson. vIBSMun E N 1-1 1-15V2 Total valor do IBS municipal. vIBSMun = (vBCCIBS − vCredPresMun − vDifMun − vDevTribMun − vDesonMun) × pAliqEfetMun. vIBSTot E N 1-1 1-15V2 Total Valor do IBS Total. vIBSTot = vIBSUF + vIBSMun."
+  },
+  {
+    "s": "NT 001 NFS-e",
+    "a": "Grupo gCBS – Totalizações da CBS (NFS-e)",
+    "t": "Grupo de Informações Relativas às Totalizações da CBS — caminho: NFSe/infNFSe/IBSCBSSEL/totCIBSSel/ CAMPO ELE TIPO OCOR. TAM. DESCRIÇÃO gCBS G – 1-1 – Grupo de valores referentes à CBS. vCredPresCBS E N 1-1 1-15V2 Total do Crédito Presumido municipal. vDifCBS E N 1-1 1-15V2 Total do Diferimento municipal. vDesonCBS E N 1-1 1-15V2 Total valor desonerado municipal. vDesonCBS = vBC × pAliqCBSDeson. vCBS E N 1-1 1-15V2 Total valor da CBS da União. vCBS = (vBCCIBS − vCredPresCBS − vDifCBS − vDevTribCBS − vDesonCBS) × pAliqEfetCBS. Documento assinado por Samuel Kruger – Auditor-Fiscal da Receita Federal do Brasil / Secretário-Executivo da SE/CGNFS-e."
+  }
+]

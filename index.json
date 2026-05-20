@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "generated": "2026-05-20T18:26:56.459Z",
+  "fontes": {
+    "LCP 214": "lcp214.json",
+    "LCP 227": "lcp227.json",
+    "Regulamento CBS": "reg_cbs.json",
+    "Regulamento IBS": "reg_ibs.json",
+    "NT 001 NFS-e": "nt001.json",
+    "NT 002 NFS-e": "nt002.json",
+    "NT 003 NFS-e": "nt003.json",
+    "NT 004 NFS-e": "nt004.json",
+    "NT 005 NFS-e": "nt005.json",
+    "NT 006 NFS-e Via": "nt006.json",
+    "NT 007 NFS-e": "nt007.json",
+    "NT 008 NFS-e": "nt008.json"
+  }
+}
