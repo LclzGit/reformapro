@@ -657,6 +657,8 @@ const STRUCTURE=[{"source":"LCP 214","articles":[{"art":"Art. 1","livro":"Livro 
 // ══════════════════════════════════════════
 function cleanArtText(t){
   if(!t)return t;
+  // Fix Windows-1252 mojibake: \x93/\x94 → curly double quotes, \x91/\x92 → curly single quotes
+  t=t.replace(/\x93/g,'“').replace(/\x94/g,'”').replace(/\x91/g,'‘').replace(/\x92/g,'’');
   // Remove structural headings (Seção, Capítulo, Título, Livro, Parte) that appear
   // at the tail of the article text — they belong to the NEXT section and were
   // captured during parsing.
