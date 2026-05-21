@@ -647,6 +647,20 @@ body.dark .mob-nav-btn{background:var(--wh);border-color:var(--bo)}
   <button id="rdScrollTop" title="Voltar ao topo" onclick="rdScrollToTop()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
   </button>
+  <!-- Painel de referência cruzada -->
+  <div class="art-panel" id="rdRefPanel">
+    <div class="ap-hdr">
+      <div class="ap-title" id="rdRefPanelTitle">Artigo</div>
+      <button class="ap-close" onclick="document.getElementById('rdRefPanel').classList.remove('on')">✕</button>
+    </div>
+    <div class="ap-body">
+      <div class="ap-meta" id="rdRefPanelMeta"></div>
+      <div class="ap-text rd-body" id="rdRefPanelBody" style="white-space:pre-wrap;font-family:Georgia,serif"></div>
+    </div>
+    <div class="ap-footer">
+      <button class="btn bp bsm" onclick="rdRefGoLeitor()">📖 Ir para o artigo</button>
+    </div>
+  </div>
 </div>
 
 
@@ -1194,10 +1208,24 @@ function linkifyRefs(text, src) {
 function rdJumpToArt(src, normLabel) {
   const chunk = CHUNKS.find(c => c.s === src && _normArt(c.a) === _normArt(normLabel));
   if (!chunk) return;
-  // If already in same source/section, find in pool
+  const full = FULL_CHUNKS.find(x => x.s === chunk.s && x.a === chunk.a);
+  const bodyText = cleanArtText(full ? full.t : chunk.t);
+  const isTable = full && full.t && full.t.includes('<table');
+  const panel = document.getElementById('rdRefPanel');
+  document.getElementById('rdRefPanelTitle').textContent = chunk.a;
+  document.getElementById('rdRefPanelMeta').textContent = chunk.s;
+  document.getElementById('rdRefPanelBody').innerHTML = isTable ? bodyText : linkifyGlossary(linkifyRefs(bodyText, chunk.s));
+  panel.dataset.refSrc = src;
+  panel.dataset.refLabel = normLabel;
+  panel.classList.add('on');
+}
+function rdRefGoLeitor(){
+  const panel = document.getElementById('rdRefPanel');
+  const src = panel.dataset.refSrc;
+  const normLabel = panel.dataset.refLabel;
+  panel.classList.remove('on');
   const poolIdx = rdSecPool.findIndex(c => c.s === src && _normArt(c.a) === _normArt(normLabel));
   if (poolIdx >= 0) { rdOpenFromPool(poolIdx); return; }
-  // Otherwise navigate via full path
   const doc = STRUCTURE.find(d => d.source === src);
   if (!doc) return;
   const art = doc.articles.find(a => _normArt(a.art) === _normArt(normLabel));
@@ -1206,8 +1234,7 @@ function rdJumpToArt(src, normLabel) {
   const secLabel = (art.livro||'(Disposições Gerais)') + ' › ' + (art.titulo||'Disposições Gerais');
   const sec = secs.find(s => s.label === secLabel);
   if (!sec) return;
-  const parts = sec.label.split(' › ');
-  const shortT = parts[parts.length-1]||sec.label;
+  const shortT = sec.label.split(' › ').pop() || sec.label;
   rdShowLevel2(src, sec.label, shortT);
   setTimeout(() => {
     const idx = rdSecPool.findIndex(c => _normArt(c.a) === _normArt(normLabel));
