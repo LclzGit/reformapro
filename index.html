@@ -508,6 +508,7 @@ body.dark .btn-o:hover,.dark .bo_:hover{background:rgba(26,143,209,.15);color:va
     <div class="art-panel" id="mapPanel">
       <div class="ap-hdr"><div class="ap-title" id="mapPanelT">Artigo</div><button class="ap-close" onclick="mapPC()">✕</button></div>
       <div class="ap-body"><div class="ap-meta" id="mapPanelM"></div><div class="ap-text" id="mapPanelTxt"></div></div>
+      <div class="ap-footer"><button class="btn bp bsm" onclick="mapGoLeitor()">📖 Abrir no Leitor</button></div>
     </div>
   </div>
 </div>
@@ -803,7 +804,9 @@ function buildTree(container,arts,src){
   });
 }
 
+let mapCurSrc=null,mapCurArt=null;
 function mapOpen(a,src,evt){
+  mapCurSrc=src;mapCurArt=a.art;
   const full=FULL_CHUNKS.find(c=>c.s===src&&c.a===a.art);
   document.getElementById('mapPanelT').textContent=a.art;
   document.getElementById('mapPanelM').textContent=`${src}${a.titulo?' · '+a.titulo.slice(0,40):''}`;
@@ -824,6 +827,38 @@ function mapOpen(a,src,evt){
 function mapPC(){
   const p=document.getElementById('mapPanel');p.classList.remove('on');
   setTimeout(()=>{p.style.top='0';p.style.bottom='0';p.style.height='';p.style.borderRadius=''},300);
+}
+function mapGoLeitor(){
+  if(!mapCurSrc||!mapCurArt)return;
+  const srcName=mapCurSrc,artName=mapCurArt;
+  mapPC();
+  go('leitor');
+  setTimeout(()=>{
+    rdShowLevel1(srcName);
+    setTimeout(()=>{
+      const secs=rdGetSections(srcName);
+      const doc=STRUCTURE.find(d=>d.source===srcName);
+      if(doc){
+        const art=doc.articles.find(a=>a.art===artName);
+        if(art){
+          const secLabel=(art.livro||'(Disposições Gerais)')+' › '+(art.titulo||'Disposições Gerais');
+          const sec=secs.find(s=>s.label===secLabel);
+          if(sec){
+            const parts=sec.label.split(' › ');
+            const shortT=parts[parts.length-1]||sec.label;
+            rdShowLevel2(srcName,sec.label,shortT);
+            setTimeout(()=>{
+              const idx=rdSecPool.findIndex(c=>c.a===artName);
+              if(idx>=0)rdOpenFromPool(idx);
+            },100);
+          } else {
+            rdShowLevel2(srcName,secs[0]&&secs[0].label,secs[0]&&secs[0].short);
+            setTimeout(()=>{const idx=rdSecPool.findIndex(c=>c.a===artName);if(idx>=0)rdOpenFromPool(idx)},100);
+          }
+        }
+      }
+    },100);
+  },50);
 }
 
 function mapF(q){
