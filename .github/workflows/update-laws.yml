@@ -47,19 +47,50 @@ jobs:
           python3 scripts/fetch_laws.py $SOURCES
         timeout-minutes: 10
 
-      - name: Verificar mudanças nos JSONs
+      - name: Verificar mudanças reais nos artigos
         id: check_changes
         run: |
-          git diff --name-only -- '*.json' > /tmp/changed_files.txt
-          cat /tmp/changed_files.txt
-          if [ -s /tmp/changed_files.txt ]; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "Arquivos alterados:"
-            cat /tmp/changed_files.txt
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-            echo "Nenhum JSON alterado — legislação sem mudanças."
-          fi
+          python3 - <<'EOF'
+          import json, hashlib, os, sys
+          from pathlib import Path
+
+          files = ['lcp214.json', 'lcp227.json', 'reg_cbs.json']
+          changed = []
+
+          for fname in files:
+              path = Path(fname)
+              if not path.exists():
+                  continue
+
+              # Hash apenas dos textos dos artigos (ignora formatação/ordem dos campos JSON)
+              new_data = json.loads(path.read_text(encoding='utf-8'))
+              new_hash = hashlib.sha256(
+                  '\n'.join(f"{c['a']}::{c['t']}" for c in new_data).encode()
+              ).hexdigest()
+
+              # Compara com hash salvo da última versão aceita
+              hash_file = Path(f'scripts/.hash_{fname}')
+              old_hash = hash_file.read_text().strip() if hash_file.exists() else ''
+
+              if new_hash != old_hash:
+                  changed.append(fname)
+                  hash_file.write_text(new_hash)
+                  print(f'  MUDANÇA DETECTADA: {fname} (hash {old_hash[:8] or "novo"} → {new_hash[:8]})')
+              else:
+                  print(f'  Sem mudança: {fname} (hash {new_hash[:8]})')
+
+          with open('/tmp/changed_files.txt', 'w') as f:
+              f.write('\n'.join(changed))
+
+          if changed:
+              print(f'\nArquivos com mudança real: {changed}')
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+                  fh.write('changed=true\n')
+          else:
+              print('\nNenhum artigo alterado — legislação sem mudanças.')
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+                  fh.write('changed=false\n')
+          EOF
 
       - name: Reconstruir index.html
         if: steps.check_changes.outputs.changed == 'true'
@@ -72,7 +103,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           # Adiciona JSONs alterados, versão arquivada e index.html
-          git add '*.json' versions/ scripts/*_structure.json index.html
+          git add '*.json' versions/ scripts/*_structure.json scripts/.hash_*.json index.html
           git diff --cached --quiet && echo "Nada para commitar." && exit 0
 
           DATE=$(date +%Y-%m-%d)
