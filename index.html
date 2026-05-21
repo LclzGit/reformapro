@@ -886,7 +886,7 @@ function rdGetSections(src){
 }
 
 // Artigos de uma seção
-const _normArt=s=>s.replace(/[º°]/g,'').trim();
+const _normArt=s=>s.replace(/[º°]/g,'').replace(/\.$/,'').trim();
 function rdGetArts(src,secLabel){
   const doc=STRUCTURE.find(d=>d.source===src);
   if(!doc)return[];
