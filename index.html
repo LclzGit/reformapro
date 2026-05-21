@@ -394,6 +394,20 @@ body.dark .rd-body span[style*='background:#f1f5f9']{background:rgba(255,255,255
 /* ── Badge atualização ── */
 .update-badge{display:inline-flex;align-items:center;gap:5px;font-size:.6rem;font-family:var(--mono);color:var(--ft);background:var(--bg);border:1px solid var(--bo);border-radius:8px;padding:2px 8px}
 body.dark .btn-o:hover,.dark .bo_:hover{background:rgba(26,143,209,.15);color:var(--br)}
+/* ── Glossário ── */
+.gloss-term{border-bottom:1.5px dotted var(--gn);cursor:help;transition:background .1s}
+.gloss-term:hover{background:var(--gnl)}
+body.dark .gloss-term:hover{background:rgba(0,168,107,.12)}
+#glossPop{position:fixed;z-index:600;background:var(--wh);border:1.5px solid var(--bo2);border-radius:12px;padding:14px 16px;max-width:290px;box-shadow:var(--sh2);display:none;pointer-events:none}
+#glossPop.on{display:block}
+#glossPopTerm{font-size:.8rem;font-weight:800;color:var(--br);margin-bottom:5px;font-family:var(--mono)}
+#glossPopDef{font-size:.76rem;color:var(--md);line-height:1.65}
+body.dark #glossPop{background:#1e2130;border-color:var(--bo2)}
+body.dark #glossPopDef{color:var(--md)}
+/* ── Font size control ── */
+.rd-font-btn{padding:2px 7px;font-size:.78rem;font-family:var(--mono);font-weight:700;background:var(--wh);border:1.5px solid var(--bo);border-radius:5px;cursor:pointer;color:var(--md);line-height:1.4;flex-shrink:0;transition:all .1s}
+.rd-font-btn:hover{border-color:var(--br);color:var(--br);background:var(--brl)}
+body.dark .rd-font-btn{background:var(--wh);border-color:var(--bo)}
 
 /* ── MOBILE NAV OVERLAY ── */
 .mob-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:299;backdrop-filter:blur(2px)}
@@ -511,6 +525,9 @@ body.dark .mob-nav-btn{background:var(--wh);border-color:var(--bo)}
 
   </div>
   <div class="menu-stats" id="menuStats"></div>
+  <div style="text-align:center;padding:4px 28px 18px">
+    <a href="index.html" download="ReformaPro.html" class="btn bo_ bsm" style="text-decoration:none;font-size:.68rem">⬇️ Baixar app atualizado</a>
+  </div>
 </div>
 <div class="page" id="pg-busca">
   <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative">
@@ -613,6 +630,8 @@ body.dark .mob-nav-btn{background:var(--wh);border-color:var(--bo)}
         </div>
         <button class="btn bo_ bsm" id="rdPrev" onclick="rdNav(-1)" disabled>← Ant.</button>
         <button class="btn bo_ bsm" id="rdNext" onclick="rdNav(1)" disabled>Próx. →</button>
+        <button class="rd-font-btn" onclick="rdFontChange(-1)" title="Diminuir fonte">A−</button>
+        <button class="rd-font-btn" onclick="rdFontChange(1)" title="Aumentar fonte">A+</button>
         <button class="btn bo_ bsm" onclick="rdExport()" title="Exportar anotações">💾 Exportar</button>
         <label class="btn bo_ bsm" style="cursor:pointer" title="Importar anotações">📂 Importar<input type="file" accept=".json" onchange="rdImport(this)" style="display:none"></label>
       </div>
@@ -1098,6 +1117,65 @@ function rdOpenFromPool(poolIdx){
 }
 
 
+// ── Glossário ──────────────────────────────────────────────
+const GLOSSARY={
+  'IBS':'Imposto sobre Bens e Serviços — tributo de competência compartilhada (estados e municípios) que substituirá o ICMS e o ISS.',
+  'CBS':'Contribuição sobre Bens e Serviços — tributo federal não-cumulativo que substituirá o PIS, a COFINS e a contribuição ao PIS-Importação.',
+  'split payment':'Mecanismo em que o valor do IBS/CBS é retido automaticamente pelo intermediador financeiro da transação e repassado diretamente ao Fisco.',
+  'fato gerador':'Situação prevista em lei que, ao ocorrer, faz nascer a obrigação tributária (ex: saída da mercadoria, prestação do serviço).',
+  'base de cálculo':'Valor sobre o qual se aplica a alíquota para calcular o montante do tributo devido.',
+  'alíquota':'Percentual aplicado sobre a base de cálculo para determinar o valor do tributo a pagar.',
+  'crédito fiscal':'Direito de abater, do tributo a recolher, o valor dos tributos já pagos nas etapas anteriores da cadeia produtiva.',
+  'não-cumulatividade':'Princípio que evita tributação em cascata: o tributo pago em cada etapa gera crédito abatível na etapa seguinte.',
+  'Comitê Gestor':'Órgão colegiado (CG-IBS) responsável pela gestão compartilhada do IBS entre estados, Distrito Federal e municípios.',
+  'NFS-e':'Nota Fiscal de Serviços Eletrônica — documento fiscal digital emitido na prestação de serviços, no padrão nacional do CG-IBS.',
+  'sujeito passivo':'Pessoa obrigada ao pagamento do tributo — o contribuinte (quem pratica o fato gerador) ou o responsável (terceiro designado por lei).',
+  'responsável tributário':'Terceiro que, sem praticar o fato gerador, é obrigado por lei ao recolhimento do tributo (ex: tomador do serviço, intermediador financeiro).',
+  'cashback':'Devolução de parte do IBS/CBS para famílias de baixa renda, mecanismo de progressividade previsto na reforma.',
+  'imunidade':'Limitação constitucional ao poder de tributar que veda a criação de tributos sobre determinadas situações ou entidades (templos, partidos, livros etc.).',
+  'Zona Franca de Manaus':'Área com regime aduaneiro e tributário especial em Manaus/AM, com tratamento diferenciado também no âmbito do IBS e CBS. Sigla: ZFM.',
+  'monofásica':'Regime em que o tributo é recolhido integralmente em uma única etapa da cadeia (produção ou importação), com alíquota zero nas demais.',
+  'período de apuração':'Intervalo de tempo (mensal, trimestral etc.) para cálculo do saldo de tributos a recolher após compensação de créditos.',
+  'regime de caixa':'Regime em que o tributo é apurado no momento do efetivo recebimento do pagamento.',
+  'regime de competência':'Regime em que o tributo é apurado na ocorrência do fato gerador, independentemente do recebimento.',
+};
+function linkifyGlossary(html){
+  const terms=Object.keys(GLOSSARY).sort((a,b)=>b.length-a.length);
+  const esc=terms.map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+  const re=new RegExp('(?<![\\w-])('+esc.join('|')+')(?![\\w-])','gi');
+  // Only replace inside text nodes (not inside HTML tags)
+  return html.replace(/>([^<]*)</g,(m,txt)=>{
+    return '>'+txt.replace(re,(match)=>{
+      const key=Object.keys(GLOSSARY).find(k=>k.toLowerCase()===match.toLowerCase())||match;
+      return `<span class="gloss-term" onclick="showGlossPop(${JSON.stringify(key)},event)">${match}</span>`;
+    })+'<';
+  });
+}
+function showGlossPop(key,evt){
+  evt.stopPropagation();
+  const pop=document.getElementById('glossPop');
+  const def=GLOSSARY[key]||GLOSSARY[Object.keys(GLOSSARY).find(k=>k.toLowerCase()===key.toLowerCase())];
+  if(!def)return;
+  document.getElementById('glossPopTerm').textContent=key;
+  document.getElementById('glossPopDef').textContent=def;
+  const x=Math.min(evt.clientX+12, window.innerWidth-300);
+  const y=Math.min(evt.clientY+12, window.innerHeight-120);
+  pop.style.left=x+'px'; pop.style.top=y+'px';
+  pop.classList.add('on');
+}
+document.addEventListener('click',()=>document.getElementById('glossPop')?.classList.remove('on'));
+// ── Tamanho de fonte do leitor ────────────────────────────
+const RD_FONTS=['0.78rem','0.83rem','0.88rem','0.96rem','1.06rem'];
+let rdFontIdx=parseInt(localStorage.getItem('rp_font_idx')||'2');
+function rdFontChange(d){
+  rdFontIdx=Math.max(0,Math.min(RD_FONTS.length-1,rdFontIdx+d));
+  localStorage.setItem('rp_font_idx',rdFontIdx);
+  rdApplyFont();
+}
+function rdApplyFont(){
+  document.querySelectorAll('.rd-body').forEach(el=>el.style.fontSize=RD_FONTS[rdFontIdx]);
+}
+// ─────────────────────────────────────────────────────────
 function linkifyRefs(text, src) {
   // Match: art. 10, Art. 5º, art. 156-A, Arts. 3º e 4º (only internal refs)
   return text.replace(/\b(Arts?\.\s*\d+[º°.]?(?:-[A-Z])?)/gi, (match, ref) => {
@@ -1144,7 +1222,7 @@ function rdRenderArticle(c,idx,total){
     <div style="margin-bottom:14px;display:flex;gap:6px;flex-wrap:wrap">
       <span class="tag">${c.s}</span>
     </div>
-    <div class="rd-body">${full&&full.t&&full.t.includes('<table')?bodyText:linkifyRefs(bodyText,c.s)}</div>
+    <div class="rd-body" style="font-size:${RD_FONTS[rdFontIdx]}">${full&&full.t&&full.t.includes('<table')?bodyText:linkifyGlossary(linkifyRefs(bodyText,c.s))}</div>
     <div class="rd-notes-sec">
       <div class="rd-notes-lbl">📝 Minhas Anotações</div>
       <textarea class="rd-notes-ta" placeholder="Escreva suas anotações aqui..." onchange="rdSave('${nk}',this.value)">${rdNotes[nk]||''}</textarea>
@@ -1412,5 +1490,6 @@ function mobNavClose(){
 }
 </script>
 <div class="mob-nav-overlay" id="mobNavOverlay" onclick="mobNavClose()"></div>
+<div id="glossPop"><div id="glossPopTerm"></div><div id="glossPopDef"></div></div>
 </body>
 </html>
