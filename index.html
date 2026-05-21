@@ -1198,14 +1198,24 @@ function rdApplyFont(){
 }
 // ─────────────────────────────────────────────────────────
 function linkifyRefs(text, src) {
-  return text.replace(/\b(Arts?\.\s*\d+[º°.]?(?:-[A-Z])?)/gi, (match) => {
-    const numPart = (match.match(/\d+[º°]?(?:-[A-Z])?/)||[''])[0].replace(/[º°]/g,'').replace(/\.$/,'').trim();
-    if(!numPart) return match;
-    const canonical = 'Art. ' + numPart;
-    const exists = CHUNKS.some(c => c.s === src && _normArt(c.a) === _normArt(canonical));
-    if (!exists) return match;
-    return `<span class="art-ref" data-ref-src="${src.replace(/"/g,'&quot;')}" data-ref-art="${canonical.replace(/"/g,'&quot;')}" title="Ver ${canonical}">${match}</span>`;
-  });
+  const escSrc = src.replace(/"/g,'&quot;');
+  const makeRef = (numStr, display) => {
+    const num = numStr.replace(/[º°]/g,'').replace(/\.$/,'').trim();
+    if(!num) return display;
+    const canonical = 'Art. ' + num;
+    if(!CHUNKS.some(c => c.s===src && _normArt(c.a)===_normArt(canonical))) return display;
+    return `<span class="art-ref" data-ref-src="${escSrc}" data-ref-art="${canonical}" title="Ver ${canonical}">${display}</span>`;
+  };
+  // Match "Art./Arts. N" optionally followed by ", N" / "e N" / "a N" clusters
+  return text.replace(/\b(Arts?\.\s*\d+[º°]?(?:-[A-Z])?)((?:(?:\s*,\s*|\s+(?:e|a)\s+)\d+[º°]?(?:-[A-Z])?)*)/gi,
+    (match, first, rest) => {
+      const firstNum = (first.match(/\d+[º°]?(?:-[A-Z])?/)||[''])[0];
+      const linked = makeRef(firstNum, first);
+      if(!rest) return linked;
+      const restLinked = rest.replace(/\d+[º°]?(?:-[A-Z])?/g, n => makeRef(n, n));
+      return linked + restLinked;
+    }
+  );
 }
 function rdJumpToArt(src, normLabel) {
   const chunk = CHUNKS.find(c => c.s === src && _normArt(c.a) === _normArt(normLabel));
