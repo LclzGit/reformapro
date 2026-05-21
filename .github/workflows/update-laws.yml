@@ -1,0 +1,90 @@
+name: Atualizar Legislação
+
+on:
+  schedule:
+    # Toda segunda-feira às 06:00 BRT (09:00 UTC)
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      sources:
+        description: 'Fontes a atualizar (all | lcp214 lcp227 reg_cbs)'
+        required: false
+        default: 'all'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: pip install beautifulsoup4 lxml
+
+      - name: Arquivar versão atual
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          DIR="versions/$DATE"
+          mkdir -p "$DIR"
+          for f in lcp214.json lcp227.json reg_cbs.json reg_ibs.json; do
+            [ -f "$f" ] && cp "$f" "$DIR/$f"
+          done
+          # Manter apenas as últimas 20 versões
+          ls -1d versions/20*/ 2>/dev/null | sort | head -n -20 | xargs -r rm -rf
+          echo "Arquivado em $DIR"
+
+      - name: Buscar e parsear leis
+        run: |
+          SOURCES="${{ github.event.inputs.sources || 'all' }}"
+          python3 scripts/fetch_laws.py $SOURCES
+        timeout-minutes: 10
+
+      - name: Verificar mudanças nos JSONs
+        id: check_changes
+        run: |
+          git diff --name-only -- '*.json' > /tmp/changed_files.txt
+          cat /tmp/changed_files.txt
+          if [ -s /tmp/changed_files.txt ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Arquivos alterados:"
+            cat /tmp/changed_files.txt
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "Nenhum JSON alterado — legislação sem mudanças."
+          fi
+
+      - name: Reconstruir index.html
+        if: steps.check_changes.outputs.changed == 'true'
+        run: python3 scripts/build_index.py
+
+      - name: Commit e push
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Adiciona JSONs alterados, versão arquivada e index.html
+          git add '*.json' versions/ scripts/*_structure.json index.html
+          git diff --cached --quiet && echo "Nada para commitar." && exit 0
+
+          DATE=$(date +%Y-%m-%d)
+          CHANGED=$(cat /tmp/changed_files.txt | tr '\n' ' ')
+          git commit -m "auto: atualiza legislação ($DATE)
+
+          Fontes atualizadas: $CHANGED
+          Versão anterior arquivada em versions/$DATE/"
+
+          git push origin main
+          echo "✅ Publicado no GitHub Pages"
+
+      - name: Sem mudanças
+        if: steps.check_changes.outputs.changed == 'false'
+        run: echo "✅ Legislação já está atualizada — nenhuma publicação necessária."
