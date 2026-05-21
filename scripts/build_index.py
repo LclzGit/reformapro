@@ -4,7 +4,7 @@ Reconstrói index.html com os dados atualizados dos JSON.
 Substitui CHUNKS, FULL_CHUNKS e STRUCTURE mantendo o resto do app intacto.
 Uso: python3 scripts/build_index.py
 """
-import json, re, html as hl
+import json, re, html as hl, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
@@ -199,6 +199,8 @@ def build():
         print('WARNING: FULL_CHUNKS line not found')
     if not replace_line(lines, 'const STRUCTURE=[', structure_line):
         print('WARNING: STRUCTURE line not found')
+    if not replace_line(lines, 'const DATA_DATE=', f"const DATA_DATE='{datetime.date.today().isoformat()}';\n"):
+        print('WARNING: DATA_DATE line not found')
 
     # Replace NT block
     nt_start = nt_end = None
