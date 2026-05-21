@@ -1148,7 +1148,7 @@ function linkifyGlossary(html){
     if(i%2===1)return part; // HTML tag — skip
     return part.replace(re,(match)=>{
       const key=Object.keys(GLOSSARY).find(k=>k.toLowerCase()===match.toLowerCase())||match;
-      return `<span class="gloss-term" onclick="showGlossPop(${JSON.stringify(key)},event)">${match}</span>`;
+      return `<span class="gloss-term" data-gloss="${key.replace(/"/g,'&quot;')}">${match}</span>`;
     });
   }).join('');
 }
@@ -1164,7 +1164,11 @@ function showGlossPop(key,evt){
   pop.style.left=x+'px'; pop.style.top=y+'px';
   pop.classList.add('on');
 }
-document.addEventListener('click',()=>document.getElementById('glossPop')?.classList.remove('on'));
+document.addEventListener('click',(e)=>{
+  const term=e.target.closest('.gloss-term');
+  if(term){e.stopPropagation();showGlossPop(term.dataset.gloss,e);}
+  else document.getElementById('glossPop')?.classList.remove('on');
+});
 // ── Tamanho de fonte do leitor ────────────────────────────
 const RD_FONTS=['0.78rem','0.83rem','0.88rem','0.96rem','1.06rem'];
 let rdFontIdx=parseInt(localStorage.getItem('rp_font_idx')||'2');
