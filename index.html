@@ -1199,21 +1199,23 @@ function rdApplyFont(){
 // ─────────────────────────────────────────────────────────
 function linkifyRefs(text, src) {
   const escSrc = src.replace(/"/g,'&quot;');
-  const makeRef = (numStr, display) => {
+  // If the cluster is followed by an external source indicator, skip linkification
+  const EXTERNAL = /^\s*(?:da|do|de)\s+(?:Constituição|Emenda\s+Constitucional|CF\b|CTN\b|Código|Lei\s+[Nn]|Decreto)/i;
+  const makeRef = (numStr, display, suffix) => {
+    if(EXTERNAL.test(suffix)) return display;
     const num = numStr.replace(/[º°]/g,'').replace(/\.$/,'').trim();
     if(!num) return display;
     const canonical = 'Art. ' + num;
     if(!CHUNKS.some(c => c.s===src && _normArt(c.a)===_normArt(canonical))) return display;
     return `<span class="art-ref" data-ref-src="${escSrc}" data-ref-art="${canonical}" title="Ver ${canonical}">${display}</span>`;
   };
-  // Match "Art./Arts. N" optionally followed by ", N" / "e N" / "a N" clusters
   return text.replace(/\b(Arts?\.\s*\d+[º°]?(?:-[A-Z])?)((?:(?:\s*,\s*|\s+(?:e|a)\s+)\d+[º°]?(?:-[A-Z])?)*)/gi,
-    (match, first, rest) => {
+    (match, first, rest, offset) => {
+      const suffix = text.slice(offset + match.length);
       const firstNum = (first.match(/\d+[º°]?(?:-[A-Z])?/)||[''])[0];
-      const linked = makeRef(firstNum, first);
+      const linked = makeRef(firstNum, first, suffix);
       if(!rest) return linked;
-      const restLinked = rest.replace(/\d+[º°]?(?:-[A-Z])?/g, n => makeRef(n, n));
-      return linked + restLinked;
+      return linked + rest.replace(/\d+[º°]?(?:-[A-Z])?/g, n => makeRef(n, n, suffix));
     }
   );
 }
