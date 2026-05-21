@@ -1179,8 +1179,10 @@ function showGlossPop(key,evt){
   pop.classList.add('on');
 }
 document.addEventListener('click',(e)=>{
+  const ref=e.target.closest('.art-ref');
   const term=e.target.closest('.gloss-term');
-  if(term){e.stopPropagation();showGlossPop(term.dataset.gloss,e);}
+  if(ref){e.stopPropagation();rdJumpToArt(ref.dataset.refSrc,ref.dataset.refArt);}
+  else if(term){e.stopPropagation();showGlossPop(term.dataset.gloss,e);}
   else document.getElementById('glossPop')?.classList.remove('on');
 });
 // ── Tamanho de fonte do leitor ────────────────────────────
@@ -1196,13 +1198,13 @@ function rdApplyFont(){
 }
 // ─────────────────────────────────────────────────────────
 function linkifyRefs(text, src) {
-  // Match: art. 10, Art. 5º, art. 156-A, Arts. 3º e 4º (only internal refs)
-  return text.replace(/\b(Arts?\.\s*\d+[º°.]?(?:-[A-Z])?)/gi, (match, ref) => {
-    const norm = ref.replace(/[º°]/g,'').replace(/\.$/,'').trim();
-    // Only linkify if article exists in same source
-    const exists = CHUNKS.some(c => c.s === src && _normArt(c.a) === _normArt(norm));
+  return text.replace(/\b(Arts?\.\s*\d+[º°.]?(?:-[A-Z])?)/gi, (match) => {
+    const numPart = (match.match(/\d+[º°]?(?:-[A-Z])?/)||[''])[0].replace(/[º°]/g,'').replace(/\.$/,'').trim();
+    if(!numPart) return match;
+    const canonical = 'Art. ' + numPart;
+    const exists = CHUNKS.some(c => c.s === src && _normArt(c.a) === _normArt(canonical));
     if (!exists) return match;
-    return `<span class="art-ref" onclick="rdJumpToArt(${JSON.stringify(src)},${JSON.stringify(norm)})" title="Ir para ${norm}">${match}</span>`;
+    return `<span class="art-ref" data-ref-src="${src.replace(/"/g,'&quot;')}" data-ref-art="${canonical.replace(/"/g,'&quot;')}" title="Ver ${canonical}">${match}</span>`;
   });
 }
 function rdJumpToArt(src, normLabel) {
