@@ -1143,13 +1143,14 @@ function linkifyGlossary(html){
   const terms=Object.keys(GLOSSARY).sort((a,b)=>b.length-a.length);
   const esc=terms.map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
   const re=new RegExp('(?<![\\w-])('+esc.join('|')+')(?![\\w-])','gi');
-  // Only replace inside text nodes (not inside HTML tags)
-  return html.replace(/>([^<]*)</g,(m,txt)=>{
-    return '>'+txt.replace(re,(match)=>{
+  // Split into text nodes and HTML tags; only replace in text nodes (even indices)
+  return html.split(/(<[^>]*>)/).map((part,i)=>{
+    if(i%2===1)return part; // HTML tag — skip
+    return part.replace(re,(match)=>{
       const key=Object.keys(GLOSSARY).find(k=>k.toLowerCase()===match.toLowerCase())||match;
       return `<span class="gloss-term" onclick="showGlossPop(${JSON.stringify(key)},event)">${match}</span>`;
-    })+'<';
-  });
+    });
+  }).join('');
 }
 function showGlossPop(key,evt){
   evt.stopPropagation();
