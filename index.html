@@ -886,12 +886,15 @@ function rdGetSections(src){
 }
 
 // Artigos de uma seção
+const _normArt=s=>s.replace(/[º°]/g,'').trim();
 function rdGetArts(src,secLabel){
+  const doc=STRUCTURE.find(d=>d.source===src);
+  if(!doc)return[];
+  // Build lookup: normalizedLabel → {livro,titulo}
+  const lookup=new Map(doc.articles.map(a=>[_normArt(a.art),a]));
   return CHUNKS.filter(c=>{
     if(c.s!==src)return false;
-    const doc=STRUCTURE.find(d=>d.source===src);
-    if(!doc)return false;
-    const art=doc.articles.find(a=>a.art===c.a);
+    const art=lookup.get(_normArt(c.a));
     if(!art)return false;
     const key=(art.livro||'(Disposições Gerais)')+' › '+(art.titulo||'Disposições Gerais');
     return key===secLabel;
@@ -962,8 +965,12 @@ function rdShowLevel1(src){
     const showLivro=livroPart&&livroPart!=='(Disposições Gerais)';
     // Short title for breadcrumb: include livro when titulo alone is ambiguous
     const shortTitle=showLivro?`${livroPart} › ${tituloPart}`:tituloPart;
-    // Count notes only for articles belonging to THIS section
-    const noteCount=sec.arts.filter(a=>{const k=src+'|'+a.art;return rdNotes[k]&&rdNotes[k].trim()}).length;
+    // Count notes — map normalized art label → actual chunk label for note key lookup
+    if(!rdShowLevel1._artKeyMap||rdShowLevel1._artKeyMapSrc!==src){
+      rdShowLevel1._artKeyMap=new Map();rdShowLevel1._artKeyMapSrc=src;
+      CHUNKS.filter(c=>c.s===src).forEach(c=>rdShowLevel1._artKeyMap.set(_normArt(c.a),c.a));
+    }
+    const noteCount=sec.arts.filter(a=>{const act=rdShowLevel1._artKeyMap.get(_normArt(a.art))||a.art;return rdNotes[src+'|'+act]&&rdNotes[src+'|'+act].trim()}).length;
     d.innerHTML=`<div class="rd-sec-title">${tituloPart}${showLivro?`<span style="display:block;font-size:.58rem;font-weight:400;color:var(--ft);margin-top:1px">${livroPart}</span>`:''}</div><div class="rd-sec-count">${sec.count} art.${noteCount?' · <span style="color:var(--yw);font-weight:700">'+noteCount+' nota'+(noteCount>1?'s':'')+'</span>':''}</div>`;
     d.onclick=()=>rdShowLevel2(src,sec.label,shortTitle);
     list.appendChild(d);
