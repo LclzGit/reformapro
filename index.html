@@ -395,6 +395,55 @@ body.dark .rd-body span[style*='background:#f1f5f9']{background:rgba(255,255,255
 .update-badge{display:inline-flex;align-items:center;gap:5px;font-size:.6rem;font-family:var(--mono);color:var(--ft);background:var(--bg);border:1px solid var(--bo);border-radius:8px;padding:2px 8px}
 body.dark .btn-o:hover,.dark .bo_:hover{background:rgba(26,143,209,.15);color:var(--br)}
 
+/* ── MOBILE NAV OVERLAY ── */
+.mob-nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:299;backdrop-filter:blur(2px)}
+.mob-nav-overlay.on{display:block}
+/* Hamburger button — hidden on desktop, shown on mobile */
+.mob-nav-btn{display:none;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;border:1.5px solid var(--bo);background:var(--wh);cursor:pointer;color:var(--md);flex-shrink:0;font-size:17px;line-height:1}
+.mob-nav-btn:hover{border-color:var(--br);color:var(--br)}
+body.dark .mob-nav-btn{background:var(--wh);border-color:var(--bo)}
+
+/* ── MOBILE ── */
+@media(max-width:640px){
+  /* Topbar */
+  .topbar{padding:0 10px}
+  .logo small{display:none}
+  .nav-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .nav-tabs::-webkit-scrollbar{display:none}
+  .nt{padding:4px 9px;font-size:.63rem}
+  /* Menu */
+  .menu-hero{padding:18px 14px 14px}
+  .menu-hero h1{font-size:1.35rem}
+  .modules{padding:14px;gap:10px}
+  /* Art panel full width */
+  .art-panel{width:100%!important}
+  /* Leitor nav — drawer */
+  .rd-nav{
+    position:fixed;top:0;left:0;bottom:0;z-index:300;
+    width:280px!important;min-width:280px!important;
+    transform:translateX(-100%);transition:transform .25s ease;
+    box-shadow:4px 0 24px rgba(0,0,0,.25)
+  }
+  .rd-nav.mob-open{transform:translateX(0)}
+  /* Notas sidebar — drawer */
+  .notas-sidebar{
+    position:fixed;top:0;left:0;bottom:0;z-index:300;
+    width:260px!important;min-width:260px!important;
+    transform:translateX(-100%);transition:transform .25s ease;
+    box-shadow:4px 0 24px rgba(0,0,0,.25)
+  }
+  .notas-sidebar.mob-open{transform:translateX(0)}
+  /* Show hamburger buttons */
+  .mob-nav-btn{display:flex}
+  /* Leitor toolbar */
+  .rd-tb{padding:6px 10px;gap:4px;flex-wrap:nowrap;overflow-x:auto}
+  .rd-content{padding:16px}
+  /* Filter bar scroll */
+  .filter-bar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .filter-bar::-webkit-scrollbar{display:none}
+  /* Map area */
+  .map-area{padding:10px 12px}
+}
 </style>
 </head>
 <body>
@@ -557,6 +606,7 @@ body.dark .btn-o:hover,.dark .bo_:hover{background:rgba(26,143,209,.15);color:va
     <!-- ÁREA DE LEITURA -->
     <div class="rd-main">
       <div class="rd-tb">
+        <button class="mob-nav-btn" onclick="mobNavToggle('rd-nav')" title="Abrir navegação">☰</button>
         <div class="rd-info" id="rdInfo" style="display:flex;align-items:center;gap:8px">
           Selecione um artigo
           <span id="rdNoteCount" style="font-size:.6rem;font-family:var(--mono);background:var(--yw);color:#7c5500;border-radius:10px;padding:1px 6px;font-weight:600;display:none"></span>
@@ -608,6 +658,7 @@ body.dark .btn-o:hover,.dark .bo_:hover{background:rgba(26,143,209,.15);color:va
     </div>
     <div class="notas-main">
       <div class="sub-tb">
+        <button class="mob-nav-btn" onclick="mobNavToggle('notas-sidebar')" title="Filtrar por lei">☰</button>
         <div class="sub-t"><div class="dot"></div>Minhas Anotações</div>
         <span class="stag" id="notaCount">0 anotações</span>
       </div>
@@ -1037,6 +1088,7 @@ function rdGoLevel(n){if(n===0)rdShowLevel0()}
 // ── Abrir artigo ──────────────────────────
 function rdOpenFromPool(poolIdx){
   rdIdx=poolIdx;
+  mobNavClose();
   const pool=document.querySelectorAll('.rd-a');
   pool.forEach(e=>e.classList.remove('on'));
   const el=document.querySelector(`.rd-a[data-pool="${poolIdx}"]`);
@@ -1345,6 +1397,20 @@ function rdScrollToTop(){
   else{console.log('Nenhum elemento com scrollTop>0 encontrado');}
 }
 
+
+function mobNavToggle(cls){
+  const el=document.querySelector('.'+cls);
+  const ov=document.getElementById('mobNavOverlay');
+  if(!el||!ov)return;
+  const open=el.classList.toggle('mob-open');
+  ov.classList.toggle('on',open);
+}
+function mobNavClose(){
+  document.querySelectorAll('.rd-nav,.notas-sidebar').forEach(el=>el.classList.remove('mob-open'));
+  const ov=document.getElementById('mobNavOverlay');
+  if(ov)ov.classList.remove('on');
+}
 </script>
+<div class="mob-nav-overlay" id="mobNavOverlay" onclick="mobNavClose()"></div>
 </body>
 </html>
