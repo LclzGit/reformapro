@@ -54,9 +54,19 @@ def fetch_html(url: str) -> str:
                 elif 'br' in enc:
                     import brotli
                     raw = brotli.decompress(raw)
-                charset = 'utf-8'
+                charset = None
+                # 1. HTTP Content-Type header
                 if 'charset=' in ct:
                     charset = ct.split('charset=')[-1].split(';')[0].strip()
+                # 2. HTML <meta charset> / <meta http-equiv> (scan first 4 KB)
+                if not charset:
+                    snippet = raw[:4096].decode('ascii', errors='ignore')
+                    m = re.search(r'charset=["\']?([a-zA-Z0-9_-]+)', snippet, re.I)
+                    if m:
+                        charset = m.group(1)
+                # 3. Planalto uses windows-1252 — safer fallback than utf-8
+                if not charset:
+                    charset = 'windows-1252'
                 return raw.decode(charset, errors='replace')
         except urllib.error.HTTPError as e:
             print(f'  HTTP {e.code} on attempt {attempt+1}')
