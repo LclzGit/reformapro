@@ -44,7 +44,10 @@ jobs:
       - name: Buscar e parsear leis
         run: |
           SOURCES="${{ github.event.inputs.sources || 'all' }}"
-          python3 scripts/fetch_laws.py $SOURCES
+          python3 scripts/fetch_laws.py $SOURCES || {
+            echo "::error::fetch_laws.py falhou — encoding corrompido ou parsing inválido. Nenhum arquivo foi sobrescrito."
+            exit 1
+          }
         timeout-minutes: 10
 
       - name: Verificar mudanças reais nos artigos

@@ -207,6 +207,46 @@ def parse_planalto(html: str, source_name: str):
     return chunks, structure_articles
 
 
+def validate_chunks(chunks: list, key: str) -> bool:
+    """Abort if encoding is broken (>2% replacement chars) or chunk count is suspiciously low."""
+    if not chunks:
+        print(f'  ✗ VALIDATION FAILED: zero chunks parsed')
+        return False
+
+    bad = sum(1 for c in chunks if '�' in c.get('t', '') or '?' in c.get('t', ''))
+    pct = bad / len(chunks) * 100
+    if pct > 2:
+        print(f'  ✗ VALIDATION FAILED: {bad}/{len(chunks)} chunks ({pct:.1f}%) têm chars corrompidos')
+        print(f'    Provável problema de encoding — abortando para não sobrescrever dados limpos')
+        return False
+
+    # Minimum expected chunks per source (conservative lower bound)
+    minimums = {'lcp214': 400, 'lcp227': 150, 'reg_cbs': 500}
+    minimum = minimums.get(key, 0)
+    if len(chunks) < minimum:
+        print(f'  ✗ VALIDATION FAILED: apenas {len(chunks)} chunks (mínimo esperado: {minimum})')
+        print(f'    Provável falha de parsing — abortando para não sobrescrever dados limpos')
+        return False
+
+    print(f'  ✓ Validação OK: {len(chunks)} chunks, {bad} com chars suspeitos ({pct:.1f}%)')
+    return True
+
+
+def apply_manual_patches(chunks: list, key: str) -> list:
+    """Apply curated fixes that must survive auto-fetches."""
+    if key == 'reg_cbs':
+        # Art. 620 is the entry-into-force article — strip the appended annexes
+        # and presidential signature block (everything after the first sentence).
+        for c in chunks:
+            if c.get('a') == 'Art. 620.':
+                c['t'] = c['t'].split('\n')[0].strip()
+                break
+        # Remove any Annex chunks that the parser may have captured —
+        # canonical versions live in scripts/reg_cbs_annexes.json
+        chunks = [c for c in chunks if c.get('a', '').startswith('Art.')]
+    return chunks
+
+
 def fetch_source(key: str):
     cfg = SOURCES[key]
     print(f'\n→ Fetching {key} from {cfg["url"]}')
@@ -217,6 +257,11 @@ def fetch_source(key: str):
     if not chunks:
         print(f'  WARNING: No chunks parsed for {key} — aborting update')
         return None, None
+
+    if not validate_chunks(chunks, key):
+        return None, None
+
+    chunks = apply_manual_patches(chunks, key)
 
     out_path = ROOT / cfg['out']
     with open(out_path, 'w', encoding='utf-8') as f:
