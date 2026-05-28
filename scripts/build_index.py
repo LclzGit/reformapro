@@ -120,6 +120,18 @@ def build():
     all_structure  = []
     for key, source, fname in law_configs:
         chunks = load_json(ROOT / fname)
+
+        # ── Manual additions that survive auto-fetches ──────────
+        # Annexes stored separately so the fetch routine never overwrites them.
+        # For reg_cbs: strip any Annex chunks that slipped into the main JSON
+        # (can happen if fetch captured them again), then re-append from the
+        # canonical manual file.
+        if key == 'reg_cbs':
+            chunks = [c for c in chunks if c.get('a','').startswith('Art.')]
+            annexes_path = SCRIPTS / 'reg_cbs_annexes.json'
+            if annexes_path.exists():
+                chunks.extend(load_json(annexes_path))
+
         all_law_chunks.extend(chunks)
         struct = build_structure_for_law(key)
         if struct:
