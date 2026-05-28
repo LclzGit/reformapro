@@ -268,10 +268,16 @@ def fetch_source(key: str):
         json.dump(chunks, f, ensure_ascii=False, separators=(',', ':'))
     print(f'  Saved {len(chunks)} chunks → {cfg["out"]}')
 
+    # Structure files are manually curated (livro/título assignments) — never
+    # overwrite them automatically. Only write if the file doesn't exist yet.
     struct_path = ROOT / 'scripts' / f'{key}_structure.json'
-    with open(struct_path, 'w', encoding='utf-8') as f:
-        json.dump({'source': cfg['source'], 'articles': structure}, f,
-                  ensure_ascii=False, separators=(',', ':'))
+    if not struct_path.exists():
+        with open(struct_path, 'w', encoding='utf-8') as f:
+            json.dump({'source': cfg['source'], 'articles': structure}, f,
+                      ensure_ascii=False, separators=(',', ':'))
+        print(f'  Created structure (first run) → scripts/{key}_structure.json')
+    else:
+        print(f'  Estrutura mantida (curada manualmente) → scripts/{key}_structure.json')
     print(f'  Saved structure → scripts/{key}_structure.json')
 
     return chunks, structure
