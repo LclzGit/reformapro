@@ -187,7 +187,7 @@ def parse_planalto(html: str, source_name: str):
         m = art_re.match(raw)
         if m:
             flush_article()
-            current_art_label = m.group(1).strip()
+            current_art_label = re.sub(r'\s+', ' ', m.group(1)).strip()
             # Normalize: "Art. 1º" → "Art. 1"
             current_art_label = re.sub(r'[º°]', '', current_art_label).strip()
             rest = m.group(2).strip()
@@ -220,6 +220,15 @@ def validate_chunks(chunks: list, key: str) -> bool:
         print(f'    Provável problema de encoding — abortando para não sobrescrever dados limpos')
         return False
 
+    # Detect duplicates (HTML structure change causing double-parse)
+    from collections import Counter
+    dup_count = sum(1 for v in Counter(c.get('a','') for c in chunks).values() if v > 1)
+    dup_pct = dup_count / len(chunks) * 100
+    if dup_pct > 5:
+        print(f'  ✗ VALIDATION FAILED: {dup_count} artigos duplicados ({dup_pct:.1f}%) — HTML do Planalto pode ter mudado')
+        print(f'    Abortando para não sobrescrever dados limpos')
+        return False
+
     # Minimum expected chunks per source (conservative lower bound)
     minimums = {'lcp214': 400, 'lcp227': 150, 'reg_cbs': 500}
     minimum = minimums.get(key, 0)
@@ -228,7 +237,7 @@ def validate_chunks(chunks: list, key: str) -> bool:
         print(f'    Provável falha de parsing — abortando para não sobrescrever dados limpos')
         return False
 
-    print(f'  ✓ Validação OK: {len(chunks)} chunks, {bad} com chars suspeitos ({pct:.1f}%)')
+    print(f'  ✓ Validação OK: {len(chunks)} chunks, {bad} com chars suspeitos ({pct:.1f}%), {dup_count} duplicados')
     return True
 
 
