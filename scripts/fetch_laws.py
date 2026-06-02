@@ -84,9 +84,11 @@ def fetch_html(url: str) -> str:
 
 def clean_text(text: str) -> str:
     """Remove excess whitespace and normalize."""
-    text = re.sub(r'\xa0', ' ', text)           # non-breaking spaces
-    text = re.sub(r'[ \t]+', ' ', text)          # multiple spaces
-    text = re.sub(r'\n{3,}', '\n\n', text)       # multiple blank lines
+    text = re.sub(r'\xa0', ' ', text)            # non-breaking spaces
+    text = re.sub(r'\n[ \t]+', ' ', text)        # inline newline+indent → space
+    text = re.sub(r'[ \t]+', ' ', text)          # multiple spaces/tabs
+    text = re.sub(r' *\n *', '\n', text)         # spaces around newlines
+    text = re.sub(r'\n{3,}', '\n\n', text)       # 3+ blank lines → 2
     return text.strip()
 
 
@@ -167,13 +169,14 @@ def parse_planalto(html: str, source_name: str):
         elif t.startswith('CAPÍTULO') or t.startswith('CAPITULO'):
             capitulo = text.strip()
 
-    # Walk all text-bearing elements
-    for el in content.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'span', 'div'], recursive=True):
-        # Skip nested (we process leaves)
-        if el.find(['p', 'h1', 'h2', 'h3', 'h4']):
+    # Walk all text-bearing elements (li/td cover incises in lists and tables)
+    for el in content.find_all(['p', 'li', 'td', 'h1', 'h2', 'h3', 'h4', 'span', 'div'], recursive=True):
+        # Skip containers — only process leaf nodes
+        if el.find(['p', 'li', 'h1', 'h2', 'h3', 'h4']):
             continue
 
         raw = el.get_text(' ', strip=True)
+        raw = re.sub(r'\s+', ' ', raw).strip()  # collapse all whitespace
         if not raw or len(raw) < 3:
             continue
 
