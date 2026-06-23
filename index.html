@@ -823,8 +823,12 @@ function bDo(q){clearTimeout(bTO);if(!q||q.length<2){document.getElementById('bR
 function bRun(q){
   const qt=tok(q);const res=find(q,30,bFiltSrc);
   if(!res.length){document.getElementById('bResArea').innerHTML='<div class="empty"><span style="opacity:.3">😕</span><span>Nenhum resultado. Tente outros termos.</span></div>';return}
+  const mkCard=c=>`<div class="res-card" onclick='bOpen(${JSON.stringify(JSON.stringify(c))})'><div class="res-hdr"><span class="tag">${c.a}</span><span class="tag" style="background:var(--bg);color:var(--ft)">${c.s}</span></div><div class="res-txt">${hl(c.t.slice(0,220),qt)}...</div></div>`;
+  const arts=res.filter(c=>!c.a.startsWith('Anexo'));
+  const annexes=res.filter(c=>c.a.startsWith('Anexo'));
   let html=`<div class="res-count">${res.length} resultado${res.length>1?'s':''} para "<strong>${q}</strong>"</div>`;
-  res.forEach(c=>{html+=`<div class="res-card" onclick='bOpen(${JSON.stringify(JSON.stringify(c))})'><div class="res-hdr"><span class="tag">${c.a}</span><span class="tag" style="background:var(--bg);color:var(--ft)">${c.s}</span></div><div class="res-txt">${hl(c.t.slice(0,220),qt)}...</div></div>`});
+  arts.forEach(c=>{html+=mkCard(c)});
+  if(annexes.length){html+=`<div style="padding:8px 14px 4px;font-size:.65rem;font-family:var(--mono);font-weight:700;color:var(--ft);text-transform:uppercase;letter-spacing:.08em;border-top:1px solid var(--bo);margin-top:6px">Anexos</div>`;annexes.forEach(c=>{html+=mkCard(c)})}
   document.getElementById('bResArea').innerHTML=html;
 }
 let bCurSrc=null,bCurArt=null;
